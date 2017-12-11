@@ -19,6 +19,8 @@ class RoomTest {
     private lateinit var userDao : UserDao
     private lateinit var repoDao : RepoDao
     private lateinit var userWithReposDao : UserWithReposDao
+    private lateinit var categoryDao : CategoryDao
+    private lateinit var libraryDao : LibraryDao
 
     @Before
     fun setUp() {
@@ -28,6 +30,8 @@ class RoomTest {
         userDao = appDatabase.userDao()
         repoDao = appDatabase.repoDao()
         userWithReposDao = appDatabase.userWithReposDao()
+        categoryDao = appDatabase.categoryDao()
+        libraryDao = appDatabase.libraryDao()
     }
 
     @After
@@ -124,5 +128,37 @@ class RoomTest {
             Assert.assertEquals(data[index].user, userWithRepos.user)
             Assert.assertEquals(data[index].repoList, userWithRepos.repoList)
         }
+    }
+
+    // CategoryDao
+    // Library
+    @Test
+    fun testForeignKeyFunMatch() {
+        val category = Category(1,"category1", 1)
+
+        val library = Library(1,"library1", listOf(category))
+
+        library.categories.forEach {
+            it.libraryId = library.id
+        }
+
+        val insertLibrary = libraryDao.insert(library)
+        val insertCategory = categoryDao.insert(category)
+
+        Assert.assertEquals(insertCategory,1)
+        Assert.assertEquals(insertLibrary,1)
+
+        // @return List<Category>
+        val categoryGet = categoryDao.query()
+        Assert.assertEquals(category, categoryGet[0])
+
+        // @return List<Library>
+        val libraryGet = libraryDao.query()
+        Assert.assertEquals(library.name, libraryGet[0].name)
+
+        val result = libraryDao.findLibraryByCategoryName("category1")
+        Assert.assertEquals(library.name, result.name)
+
+        Assert.assertEquals(categoryDao.delete(category),1)
     }
 }

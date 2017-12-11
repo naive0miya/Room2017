@@ -28,6 +28,7 @@ class AppDatabaseHelper private constructor(context: Context) {
 
     fun close() {
         appDataBase.close()
+        INSTANCE = null
     }
 
     // UserDao
